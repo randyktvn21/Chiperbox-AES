@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chiperbox | AES-128</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="min-h-screen text-slate-100">
+  <header class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+    <section class="glass hero-panel rounded-[2rem] p-6 sm:p-8 lg:p-10">
+      <div class="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
+        <div class="max-w-4xl">
+          <div class="inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.25em] text-amber-200">
+            <span class="h-2 w-2 rounded-full bg-amber-300"></span>
+            Chiperbox
+          </div>
+          <h1 class="mt-4 text-3xl font-black tracking-tight text-white sm:text-5xl">Chiperbox AES-128</h1>
+          <p class="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
+            Ruang simulasi kriptografi bertema secure vault untuk melihat proses AES-128 dalam bentuk kotak-kotak data. Setiap byte ditempatkan dalam State Box 4 × 4, lalu perubahan Key Expansion, SubBytes, ShiftRows, MixColumns, AddRoundKey, dan operasi inverse ditampilkan sebagai alur penguncian data.
+          </p>
+          <div class="mt-6 grid gap-3 sm:grid-cols-3">
+            <div class="hero-stat">
+              <div class="hero-stat-label">Ruang Kerja</div>
+              <div class="hero-stat-value">Vault Block</div>
+            </div>
+            <div class="hero-stat">
+              <div class="hero-stat-label">Algoritma</div>
+              <div class="hero-stat-value">AES-128 · 10 Ronde</div>
+            </div>
+            <div class="hero-stat">
+              <div class="hero-stat-label">Field Byte</div>
+              <div class="hero-stat-value">GF(2<sup>8</sup>) / 0x11B</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full max-w-md rounded-[1.5rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/20 backdrop-blur">
+          <div class="text-xs font-bold uppercase tracking-[0.22em] text-slate-400">Isi Chiperbox</div>
+          <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-300">
+            <li class="feature-item"><span class="feature-dot"></span> AES dijalankan langsung di browser dengan Vanilla JavaScript, tanpa CryptoJS, Web Crypto API, atau library kriptografi pihak ketiga.</li>
+            <li class="feature-item"><span class="feature-dot"></span> Setiap ronde disajikan sebagai kartu State Box, sehingga perubahan byte bisa dibandingkan sebelum dan sesudah transformasi.</li>
+            <li class="feature-item"><span class="feature-dot"></span> Disertai tabel referensi AES: S-Box, inverse S-Box, Rcon, MixColumns, serta InvMixColumns.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </header>
+
+  <main class="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[19rem_minmax(0,1fr)] lg:px-8">
+    <aside class="space-y-6 lg:sticky lg:top-5 lg:self-start">
+      <section class="glass rounded-[1.75rem] p-5">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-black uppercase tracking-[0.18em] text-slate-200">Daftar Box</h2>
+            <p class="mt-1 text-xs text-slate-400">Pilih bagian proses tanpa mencari manual di halaman.</p>
+          </div>
+          <span id="navCounter" class="nav-counter">0</span>
+        </div>
+        <nav id="roundNav" class="mt-4 space-y-1 text-sm"></nav>
+      </section>
+
+      <section class="glass rounded-[1.75rem] p-5">
+        <h3 class="text-sm font-black uppercase tracking-[0.18em] text-slate-200">Legenda State Box</h3>
+        <div class="mt-4 grid gap-2 text-xs text-slate-300">
+          <div class="legend-item"><span class="legend-swatch legend-subbytes"></span> SubBytes</div>
+          <div class="legend-item"><span class="legend-swatch legend-shiftrows"></span> ShiftRows</div>
+          <div class="legend-item"><span class="legend-swatch legend-mixcolumns"></span> MixColumns</div>
+          <div class="legend-item"><span class="legend-swatch legend-key"></span> AddRoundKey / Round Key</div>
+          <div class="legend-item"><span class="legend-swatch legend-output"></span> Output / State akhir</div>
+        </div>
+      </section>
+    </aside>
+
+    <section class="space-y-6">
+      <section id="controls" class="glass rounded-[1.75rem] p-5 sm:p-6 lg:p-7">
+        <div class="flex flex-col gap-3 border-b border-white/10 pb-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 class="text-2xl font-black text-white">Box Input</h2>
+            <p class="mt-1 text-sm leading-6 text-slate-400">Masukkan data uji atau gunakan sampel yang sudah dibuat untuk varian Chiperbox.</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button id="exampleHexBtn" class="btn-secondary">Isi Sampel Hex</button>
+            <button id="exampleTextBtn" class="btn-secondary">Isi Sampel Teks</button>
+            <button id="loadVectorBtn" class="btn-secondary">Muat Vector AES</button>
+          </div>
+        </div>
+
+        <div class="mt-6 grid gap-4 xl:grid-cols-2">
+          <div>
+            <label for="mode" class="mb-2 block text-sm font-bold text-slate-200">Mode Proses</label>
+            <select id="mode" class="input-base">
+              <option value="encrypt">Enkripsi</option>
+              <option value="decrypt">Dekripsi</option>
+            </select>
+          </div>
+          <div>
+            <label for="inputFormat" class="mb-2 block text-sm font-bold text-slate-200">Format Data</label>
+            <select id="inputFormat" class="input-base">
+              <option value="hex">Hexadecimal, tepat 32 digit</option>
+              <option value="text">Teks, maksimum 16 byte UTF-8</option>
+            </select>
+          </div>
+
+          <div class="xl:col-span-2">
+            <label id="inputLabel" for="dataInput" class="mb-2 block text-sm font-bold text-slate-200">Plaintext / Ciphertext</label>
+            <textarea id="dataInput" rows="4" class="input-base min-h-[8rem] font-mono text-sm" spellcheck="false" placeholder="Contoh hex: 4c6f636b426f78204145533132382121&#10;Contoh teks: Box Vault 2026"></textarea>
+            <p id="inputHint" class="mt-2 text-xs leading-5 text-slate-400">Mode hex membutuhkan tepat 32 digit. State dipetakan secara column-major sesuai AES: s[r,c] = input[r + 4c].</p>
+          </div>
+
+          <div class="xl:col-span-2">
+            <label for="keyInput" class="mb-2 block text-sm font-bold text-slate-200">Kunci AES-128</label>
+            <input id="keyInput" class="input-base font-mono text-sm" spellcheck="false" placeholder="Contoh: 31415926535897932384626433832795" />
+            <p class="mt-2 text-xs leading-5 text-slate-400">Kunci harus tepat 32 digit heksadesimal atau 16 byte.</p>
+          </div>
+        </div>
+
+        <div class="mt-6 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div class="grid gap-3 sm:grid-cols-3">
+            <div class="info-card">
+              <div class="info-card-label">State Box</div>
+              <div class="info-card-value">4 × 4 byte</div>
+            </div>
+            <div class="info-card">
+              <div class="info-card-label">Key Schedule</div>
+              <div class="info-card-value">W[0] - W[43]</div>
+            </div>
+            <div class="info-card">
+              <div class="info-card-label">Output</div>
+              <div class="info-card-value">Hex string</div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap lg:justify-end">
+            <button id="runBtn" class="btn-primary">Proses Box</button>
+            <button id="toggleDetailBtn" class="btn-secondary">Sembunyikan Detail</button>
+            <button id="resetBtn" class="btn-secondary">Reset</button>
+          </div>
+        </div>
+
+        <div id="message" class="mt-5 hidden rounded-2xl border px-4 py-3 text-sm"></div>
+      </section>
+
+      <section id="summary" class="hidden glass rounded-[1.75rem] p-5 sm:p-6"></section>
+      <section id="visualization" class="space-y-6"></section>
+
+      <section id="reference" class="glass rounded-[1.75rem] p-5 sm:p-6">
+        <div class="flex flex-col gap-2 border-b border-white/10 pb-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 class="text-xl font-black text-white">Referensi Konstanta AES</h2>
+            <p class="mt-1 text-sm leading-6 text-slate-400">Daftar nilai dasar yang dipakai dalam transformasi AES-128 dan inverse transform untuk dekripsi.</p>
+          </div>
+        </div>
+        <div id="constantTables" class="mt-5 space-y-5"></div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
+    <div class="rounded-[1.5rem] border border-white/10 bg-slate-950/55 p-4 text-xs leading-5 text-slate-400">
+      Catatan: Chiperbox dibuat sebagai media belajar AES-128 satu blok. Tema secure vault dipakai agar data, kunci, ronde, dan output terlihat seperti unit-unit box yang dapat diaudit satu per satu.
+    </div>
+  </footer>
+
+  <script src="aes.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
